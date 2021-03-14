@@ -12,15 +12,21 @@ import { Link } from "react-router-dom";
 import firebase from "../../config/firebase";
 import { Formik, Form as FormikForm, Field } from "formik";
 import * as Yup from "yup";
+import md5 from "md5";
 
 const Register = () => {
   const [success, setSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
 
+  const writeUserData = ({ uid, displayName, photoURL }) => {
+    firebase.database().ref("users").child(uid).set({
+      name: displayName,
+      avatar: photoURL,
+    });
+  };
+
   const registrationSchema = Yup.object().shape({
-    username: Yup.string()
-      .min(5, "Username is too short - should be 5 chars minimum")
-      .required("Please provide your username."),
+    username: Yup.string().required("Please provide your username."),
     email: Yup.string()
       .email("Invalid email address")
       .required("Please provide an email."),
@@ -50,9 +56,21 @@ const Register = () => {
           .createUserWithEmailAndPassword(values.email, values.password)
           .then((createdUser) => {
             setSubmitting(false);
-            resetForm();
             setSuccess(true);
             console.log(createdUser);
+            createdUser.user
+              .updateProfile({
+                displayName: values.username,
+                photoURL: `http://gravatar.com/avatar/${md5(
+                  createdUser.user.email
+                )}?d=identicon`,
+              })
+              .then(() => {
+                writeUserData(createdUser.user);
+              })
+              .catch((err) => {
+                setErrorMessage(err.message);
+              });
           })
           .catch((err) => {
             setSubmitting(false);
@@ -69,7 +87,6 @@ const Register = () => {
         getFieldProps,
         handleSubmit,
       }) => {
-        console.log(errors);
         return (
           <Grid textAlign="center" verticalAlign="middle" className="app">
             <Grid.Column style={{ maxWidth: 450 }}>
