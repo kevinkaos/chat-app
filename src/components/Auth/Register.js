@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Grid,
   Segment,
@@ -14,6 +14,9 @@ import { Formik, Form as FormikForm, Field } from "formik";
 import * as Yup from "yup";
 
 const Register = () => {
+  const [success, setSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+
   const registrationSchema = Yup.object().shape({
     username: Yup.string()
       .min(5, "Username is too short - should be 5 chars minimum")
@@ -40,17 +43,20 @@ const Register = () => {
       validationSchema={registrationSchema}
       onSubmit={(values, { setSubmitting, resetForm }) => {
         setSubmitting(true);
+        setErrorMessage(null);
+        setSuccess(false);
         firebase
           .auth()
           .createUserWithEmailAndPassword(values.email, values.password)
           .then((createdUser) => {
             setSubmitting(false);
             resetForm();
+            setSuccess(true);
             console.log(createdUser);
           })
           .catch((err) => {
             setSubmitting(false);
-            console.log(err);
+            setErrorMessage(err.message);
           });
       }}
     >
@@ -153,6 +159,20 @@ const Register = () => {
                   </Button>
                 </Segment>
               </Form>
+              {success && (
+                <Message
+                  success
+                  header="Your user registration was successful."
+                  content="You may now log-in with the username you have chosen."
+                />
+              )}
+              {errorMessage && (
+                <Message
+                  error
+                  header="Your user registration failed."
+                  content={errorMessage}
+                />
+              )}
               <Message>
                 Already a user? <Link to="/login">Login</Link>
               </Message>
