@@ -13,19 +13,25 @@ import {
 import Register from "./components/Auth/Register";
 import Login from "./components/Auth/Login";
 import firebase from "./config/firebase";
+import { Provider, connect } from "react-redux";
+import store from "./store";
+import { setUser } from "./actions";
+import Spinner from "./components/Spinner";
 
-const Root = () => {
+const Root = ({ setUser, isLoading }) => {
   const history = useHistory();
   useEffect(() => {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
+        setUser(user);
         history.push("/");
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [history, setUser]);
 
-  return (
+  return isLoading ? (
+    <Spinner />
+  ) : (
     <Switch>
       <Route exact path="/" component={App} />
       <Route path="/login" component={Login} />
@@ -34,12 +40,18 @@ const Root = () => {
   );
 };
 
-const RootWithRouter = withRouter(Root);
+const mapStateToProps = ({ user }) => ({
+  isLoading: user.isLoading,
+});
+
+const RootWithRouter = withRouter(connect(mapStateToProps, { setUser })(Root));
 
 ReactDOM.render(
-  <Router>
-    <RootWithRouter />
-  </Router>,
+  <Provider store={store}>
+    <Router>
+      <RootWithRouter />
+    </Router>
+  </Provider>,
   document.getElementById("root")
 );
 
