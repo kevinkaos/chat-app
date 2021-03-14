@@ -6,8 +6,10 @@
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
+    "bootstrap": "^4.6.0",
     "emoji-mart": "^3.0.1",
     "firebase": "^8.3.0",
+    "formik": "^2.2.6",
     "md5": "^2.3.0",
     "mime-types": "^2.1.29",
     "moment": "^2.29.1",
@@ -23,7 +25,8 @@
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-react": "^2.0.3",
     "uuid": "^8.3.2",
-    "web-vitals": "^1.0.1"
+    "web-vitals": "^1.0.1",
+    "yup": "^0.32.9"
   },
   "scripts": {
     "start": "react-scripts start",
