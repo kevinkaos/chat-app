@@ -76,7 +76,10 @@ const MessagesForm = ({ messagesRef, currentChannel, currentUser }) => {
         }
       );
     }
-    return () => {};
+    return () => {
+      uploadState?.uploadTask && uploadState.uploadTask.off();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uploadState.uploadTask]);
 
   const sendFileMessage = (url, ref, path) => {

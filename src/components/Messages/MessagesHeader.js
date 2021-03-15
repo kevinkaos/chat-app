@@ -5,6 +5,7 @@ const MessagesHeader = ({
   currentChannel,
   numUniqueUsers,
   handleSearchChange,
+  loading,
 }) => {
   return (
     <Segment clearing>
@@ -17,6 +18,7 @@ const MessagesHeader = ({
       </Header>
       <Header floated="right">
         <Input
+          loading={loading}
           onChange={handleSearchChange}
           size="mini"
           icon="search"

@@ -3,19 +3,24 @@ import { Segment, Comment, Image } from "semantic-ui-react";
 import MessagesHeader from "./MessagesHeader";
 import MessagesForm from "./MessagesForm";
 import firebase from "../../config/firebase";
-import moment from "moment";
+import Message from "./Message";
 
 const Messages = ({ currentChannel, currentUser, prevChannelId }) => {
   const messagesRef = firebase.database().ref("messages");
   const [allMessages, setAllMessages] = useState([]);
   const [numUniqueUsers, setNumUniqueUsers] = useState();
+  const [queryResults, setQueryResults] = useState([]);
+  const [searchState, setSearchState] = useState({
+    query: "",
+    loading: false,
+  });
 
   useEffect(() => {
     setNumUniqueUsers(countUniqueUsers(allMessages));
   }, [allMessages]);
 
   useEffect(() => {
-    const setNewMessages = () => {
+    const setMessages = () => {
       messagesRef.child(currentChannel.id).on("child_added", (snap) => {
         setAllMessages((prevState) => [...prevState, snap.val()]);
       });
@@ -24,9 +29,9 @@ const Messages = ({ currentChannel, currentUser, prevChannelId }) => {
     if (currentUser && currentChannel) {
       if (currentChannel.id !== prevChannelId) {
         setAllMessages([]);
-        setNewMessages();
+        setMessages();
       } else {
-        setNewMessages();
+        setMessages();
       }
     }
 
@@ -35,6 +40,37 @@ const Messages = ({ currentChannel, currentUser, prevChannelId }) => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChannel.id]);
+
+  const handleSearchChange = (event) => {
+    const query = event.target.value;
+    setSearchState((prevState) => ({
+      ...prevState,
+      query,
+      loading: true,
+    }));
+  };
+
+  useEffect(() => {
+    const getSearchResults = () => {
+      const regex = new RegExp(searchState.query, "gi");
+      const searchResults = allMessages.reduce((acc, cur) => {
+        if (
+          (cur.content && cur.content.match(regex)) ||
+          (cur.user.name && cur.user.name.match(regex))
+        ) {
+          acc.push(cur);
+        }
+
+        return acc;
+      }, []);
+      setQueryResults(searchResults);
+      setSearchState((prevState) => ({ ...prevState, loading: false }));
+    };
+    setTimeout(() => {
+      getSearchResults();
+    }, 500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchState.query]);
 
   const countUniqueUsers = (messages) => {
     const uniqueUsers = messages.reduce((acc, cur) => {
@@ -54,35 +90,22 @@ const Messages = ({ currentChannel, currentUser, prevChannelId }) => {
     return currentUser.uid === message.user.id ? "message__self" : "";
   };
 
-  const convertTimestampToDate = (timestamp) => moment(timestamp).fromNow();
-
   return (
     <>
       <MessagesHeader
+        handleSearchChange={handleSearchChange}
         numUniqueUsers={numUniqueUsers}
         currentChannel={currentChannel}
+        loading={searchState.loading}
       />
 
       <Segment>
         <Comment.Group className="messages" style={{ maxWidth: 1500 }}>
-          {allMessages.length
-            ? allMessages.map((message, i) => (
-                <Comment key={message.timestamp + i}>
-                  <Comment.Avatar src={message.user.avatar} />
-                  <Comment.Content className={isOwnMessage(message)}>
-                    <Comment.Author as="a">{message.user.name}</Comment.Author>
-                    <Comment.Metadata>
-                      <div>{convertTimestampToDate(message.timestamp)}</div>
-                    </Comment.Metadata>
-                    {isImage(message) ? (
-                      <Image src={message.image} className="message__image" />
-                    ) : (
-                      <Comment.Text>{message.content}</Comment.Text>
-                    )}
-                  </Comment.Content>
-                </Comment>
-              ))
-            : null}
+          <Message
+            messages={searchState.query ? queryResults : allMessages}
+            isImage={isImage}
+            isOwnMessage={isOwnMessage}
+          />
         </Comment.Group>
       </Segment>
 
