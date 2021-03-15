@@ -5,7 +5,12 @@ import FileModal from "./FileModal";
 import { v4 as uuidv4 } from "uuid";
 import ProgressBar from "./ProgressBar";
 
-const MessagesForm = ({ messagesRef, currentChannel, currentUser }) => {
+const MessagesForm = ({
+  currentChannel,
+  currentUser,
+  isPrivateChannel,
+  getMessagesRef,
+}) => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState([]);
@@ -63,7 +68,7 @@ const MessagesForm = ({ messagesRef, currentChannel, currentUser }) => {
           uploadState.uploadTask.snapshot.ref
             .getDownloadURL()
             .then((downloadURL) => {
-              sendFileMessage(downloadURL, messagesRef, currentChannel.id);
+              sendFileMessage(downloadURL, getMessagesRef(), currentChannel.id);
             })
             .catch((err) => {
               setErrors((prevState) => [...prevState, err]);
@@ -94,7 +99,7 @@ const MessagesForm = ({ messagesRef, currentChannel, currentUser }) => {
   };
 
   const uploadFile = (file, metadata) => {
-    const filePath = `chat/public/${uuidv4()}.jpg`;
+    const filePath = `${getPath()}/${uuidv4()}.jpg`;
     setUploadState((prevState) => ({
       ...prevState,
       uploadState: "uploading",
@@ -102,10 +107,18 @@ const MessagesForm = ({ messagesRef, currentChannel, currentUser }) => {
     }));
   };
 
+  const getPath = () => {
+    if (isPrivateChannel) {
+      return `chat/private-${currentChannel.id}`;
+    } else {
+      return `chat/public`;
+    }
+  };
+
   const sendMessage = () => {
     if (message) {
       setLoading(true);
-      messagesRef
+      getMessagesRef()
         .child(currentChannel.id)
         .push()
         .set(createMessage())

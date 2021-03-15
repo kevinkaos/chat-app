@@ -33,7 +33,7 @@ const UserPanel = ({ currentUser }) => {
             <Header.Content>KKaoChat</Header.Content>
           </Header>
         </Grid.Row>
-        <Header as="h4" inverted>
+        <Header as="h4" className="mb-4" inverted>
           <Dropdown
             trigger={
               <span>

@@ -8,15 +8,18 @@ const MessagesHeader = ({
   loading,
   query,
   setSearchState,
+  isPrivateChannel,
 }) => {
   return (
     <Segment clearing>
       <Header fluid="true" as="h2" floated="left" style={{ marginBottom: 0 }}>
         <span>
-          {currentChannel.name}
-          <Icon name={"star outline"} color="black" />
+          {(isPrivateChannel ? "@" : "#") + currentChannel.name}{" "}
+          {isPrivateChannel && <Icon name={"star outline"} color="black" />}
         </span>
-        <Header.Subheader>{numUniqueUsers}</Header.Subheader>
+        {numUniqueUsers > 0 && (
+          <Header.Subheader>{numUniqueUsers}</Header.Subheader>
+        )}
       </Header>
       <Header floated="right">
         <Input

@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Menu, Icon } from "semantic-ui-react";
 import firebase from "../../config/firebase";
+import { connect } from "react-redux";
+import { setCurrentChannel, setPrivateChannel } from "../../actions";
 
-const DirectMessages = ({ currentUser }) => {
+const DirectMessages = ({
+  currentUser,
+  setCurrentChannel,
+  setPrivateChannel,
+  isPrivateChannel,
+}) => {
   const [users, setUsers] = useState([]);
+  const [activeChannel, setActiveChannel] = useState("");
   const usersRef = firebase.database().ref("users");
   const connectedRef = firebase.database().ref(".info/connected");
   const presenceRef = firebase.database().ref("presence");
@@ -58,6 +66,23 @@ const DirectMessages = ({ currentUser }) => {
     setUsers(updatedUsers);
   };
 
+  const changeChannel = (user) => {
+    const channelId = getChannelId(user.uid);
+    const channelData = {
+      id: channelId,
+      name: user.name,
+    };
+    setCurrentChannel(channelData);
+    setPrivateChannel(true);
+  };
+
+  const getChannelId = (userId) => {
+    const currentUserId = currentUser.uid;
+    return userId < currentUserId
+      ? `${userId}/${currentUserId}`
+      : `${currentUserId}/${userId}`;
+  };
+
   const isUserOnline = (user) => user.status === "online";
 
   return (
@@ -71,7 +96,11 @@ const DirectMessages = ({ currentUser }) => {
       {users.map((user) => (
         <Menu.Item
           key={user.uid}
-          onClick={() => {}}
+          active={user.uid === activeChannel && isPrivateChannel}
+          onClick={() => {
+            changeChannel(user);
+            setActiveChannel(user.uid);
+          }}
           style={{ fontStyle: "italic", opacity: 0.7 }}
         >
           <Icon name="circle" color={isUserOnline(user) ? "green" : "grey"} />@{" "}
@@ -82,4 +111,11 @@ const DirectMessages = ({ currentUser }) => {
   );
 };
 
-export default DirectMessages;
+const mapStateToProps = ({ channel }) => ({
+  isPrivateChannel: channel.isPrivateChannel,
+});
+
+export default connect(mapStateToProps, {
+  setCurrentChannel,
+  setPrivateChannel,
+})(DirectMessages);

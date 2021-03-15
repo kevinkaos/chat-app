@@ -7,7 +7,7 @@ import SidePanel from "./SidePanel";
 import Messages from "./Messages";
 import MetaPanel from "./MetaPanel";
 
-const App = ({ currentUser, currentChannel }) => {
+const App = ({ currentUser, currentChannel, isPrivateChannel }) => {
   const usePrevious = (value) => {
     const ref = useRef();
     useEffect(() => {
@@ -28,6 +28,7 @@ const App = ({ currentUser, currentChannel }) => {
       <Grid.Column style={{ marginLeft: "23rem" }}>
         {currentChannel && (
           <Messages
+            isPrivateChannel={isPrivateChannel}
             key={currentChannel.id}
             prevChannelId={prevChannelId}
             currentUser={currentUser}
@@ -43,6 +44,7 @@ const App = ({ currentUser, currentChannel }) => {
 const mapStateToProps = ({ user, channel }) => ({
   currentUser: user.currentUser,
   currentChannel: channel.currentChannel,
+  isPrivateChannel: channel.isPrivateChannel,
 });
 
 export default connect(mapStateToProps)(App);

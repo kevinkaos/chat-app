@@ -5,7 +5,13 @@ import MessagesForm from "./MessagesForm";
 import firebase from "../../config/firebase";
 import Message from "./Message";
 
-const Messages = ({ currentChannel, currentUser, prevChannelId }) => {
+const Messages = ({
+  currentChannel,
+  currentUser,
+  prevChannelId,
+  isPrivateChannel,
+}) => {
+  const privateMessagesRef = firebase.database().ref("privateMessages");
   const messagesRef = firebase.database().ref("messages");
   const [allMessages, setAllMessages] = useState([]);
   const [numUniqueUsers, setNumUniqueUsers] = useState();
@@ -20,8 +26,9 @@ const Messages = ({ currentChannel, currentUser, prevChannelId }) => {
   }, [allMessages]);
 
   useEffect(() => {
+    const ref = getMessagesRef();
     const setMessages = () => {
-      messagesRef.child(currentChannel.id).on("child_added", (snap) => {
+      ref.child(currentChannel.id).on("child_added", (snap) => {
         setAllMessages((prevState) => [...prevState, snap.val()]);
       });
     };
@@ -36,7 +43,7 @@ const Messages = ({ currentChannel, currentUser, prevChannelId }) => {
     }
 
     return () => {
-      messagesRef.off();
+      ref.off();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChannel.id]);
@@ -90,9 +97,14 @@ const Messages = ({ currentChannel, currentUser, prevChannelId }) => {
     return currentUser.uid === message.user.id ? "message__self" : "";
   };
 
+  const getMessagesRef = () => {
+    return isPrivateChannel ? privateMessagesRef : messagesRef;
+  };
+
   return (
     <>
       <MessagesHeader
+        isPrivateChannel={isPrivateChannel}
         query={searchState.query}
         handleSearchChange={handleSearchChange}
         numUniqueUsers={numUniqueUsers}
@@ -112,9 +124,10 @@ const Messages = ({ currentChannel, currentUser, prevChannelId }) => {
       </Segment>
 
       <MessagesForm
-        messagesRef={messagesRef}
+        isPrivateChannel={isPrivateChannel}
         currentUser={currentUser}
         currentChannel={currentChannel}
+        getMessagesRef={getMessagesRef}
       />
     </>
   );

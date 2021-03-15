@@ -4,9 +4,15 @@ import { Formik, Form as FormikForm, Field } from "formik";
 import * as Yup from "yup";
 import firebase from "../../config/firebase";
 import { connect } from "react-redux";
-import { setCurrentChannel } from "../../actions";
+import { setCurrentChannel, setPrivateChannel } from "../../actions";
 
-const Channels = ({ currentUser, setCurrentChannel, currentChannel }) => {
+const Channels = ({
+  currentUser,
+  setCurrentChannel,
+  currentChannel,
+  setPrivateChannel,
+  isPrivateChannel,
+}) => {
   const [channels, setChannels] = useState([]);
   const [modal, setModal] = useState(false);
   const channelSchema = Yup.object().shape({
@@ -34,12 +40,15 @@ const Channels = ({ currentUser, setCurrentChannel, currentChannel }) => {
     channels.length
       ? channels.map((channel) => (
           <Menu.Item
-            active={channel.name === currentChannel?.name}
+            active={channel.name === currentChannel?.name && !isPrivateChannel}
             style={
               channel.name === currentChannel?.name ? { color: "white" } : {}
             }
             key={channel.id}
-            onClick={() => setCurrentChannel(channel)}
+            onClick={() => {
+              setCurrentChannel(channel);
+              setPrivateChannel(false);
+            }}
             name={channel.name}
           >
             # {channel.name}
@@ -169,6 +178,10 @@ const Channels = ({ currentUser, setCurrentChannel, currentChannel }) => {
 
 const mapStateToProps = ({ channel }) => ({
   currentChannel: channel.currentChannel,
+  isPrivateChannel: channel.isPrivateChannel,
 });
 
-export default connect(mapStateToProps, { setCurrentChannel })(Channels);
+export default connect(mapStateToProps, {
+  setCurrentChannel,
+  setPrivateChannel,
+})(Channels);
