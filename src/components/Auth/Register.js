@@ -47,7 +47,7 @@ const Register = () => {
         confirmation: "",
       }}
       validationSchema={registrationSchema}
-      onSubmit={(values, { setSubmitting, resetForm }) => {
+      onSubmit={(values, { setSubmitting }) => {
         setSubmitting(true);
         setErrorMessage(null);
         setSuccess(false);

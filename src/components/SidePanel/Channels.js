@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Menu, Icon, Modal, Form, Input, Button } from "semantic-ui-react";
 import { Formik, Form as FormikForm, Field } from "formik";
 import * as Yup from "yup";
+import firebase from "../../config/firebase";
+import { connect } from "react-redux";
+import { setCurrentChannel } from "../../actions";
 
-const Channels = () => {
+const Channels = ({ currentUser, setCurrentChannel, currentChannel }) => {
   const [channels, setChannels] = useState([]);
   const [modal, setModal] = useState(false);
   const channelSchema = Yup.object().shape({
@@ -12,6 +15,35 @@ const Channels = () => {
       "Please provide some details about the channel."
     ),
   });
+  useEffect(() => {
+    firebase
+      .database()
+      .ref("channels")
+      .on("child_added", (snap) => {
+        if (snap.exists()) {
+          setChannels((prevState) => [...prevState, snap.val()]);
+        }
+      });
+
+    return () => {
+      firebase.ref("channels").off();
+    };
+  }, []);
+
+  const displayChannels = () =>
+    channels.length &&
+    channels.map((channel) => (
+      <Menu.Item
+        active={channel.name === currentChannel?.name}
+        style={channel.name === currentChannel?.name ? { color: "white" } : {}}
+        key={channel.id}
+        onClick={() => setCurrentChannel(channel)}
+        name={channel.name}
+      >
+        # {channel.name}
+      </Menu.Item>
+    ));
+
   return (
     <>
       <Menu.Menu style={{ padding: "1rem 0" }}>
@@ -26,6 +58,7 @@ const Channels = () => {
             name="add"
           />
         </Menu.Item>
+        {displayChannels()}
       </Menu.Menu>
 
       <Formik
@@ -34,10 +67,43 @@ const Channels = () => {
           channelDetails: "",
         }}
         validationSchema={channelSchema}
+        onSubmit={(values, { setSubmitting, resetForm }) => {
+          setSubmitting(true);
+          const key = firebase.database().ref("channels").push().key;
+          firebase
+            .database()
+            .ref("channels")
+            .push()
+            .set({
+              id: key,
+              name: values.channelName,
+              details: values.channelDetails,
+              createdBy: {
+                name: currentUser.displayName,
+                avatar: currentUser.photoURL,
+              },
+            })
+            .then(() => {
+              resetForm();
+              setSubmitting(false);
+              setModal(false);
+            })
+            .catch((err) => {
+              setSubmitting(false);
+              setModal(false);
+              console.log("error adding channel", err);
+            });
+        }}
       >
-        {({ isSubmitting, isValid, dirty, resetForm }) => (
+        {({
+          isSubmitting,
+          isValid,
+          dirty,
+          resetForm,
+          handleSubmit,
+          getFieldProps,
+        }) => (
           <Modal
-            basic
             size="small"
             open={modal}
             onClose={() => {
@@ -47,9 +113,10 @@ const Channels = () => {
           >
             <Modal.Header>Add a Channel</Modal.Header>
             <Modal.Content>
-              <Form as={FormikForm}>
+              <Form as={FormikForm} onSubmit={handleSubmit}>
                 <Form.Field>
                   <Field
+                    {...getFieldProps("channelName")}
                     as={Input}
                     fluid
                     label="Name of Channel"
@@ -58,6 +125,7 @@ const Channels = () => {
                 </Form.Field>
                 <Form.Field>
                   <Field
+                    {...getFieldProps("channelDetails")}
                     as={Input}
                     fluid
                     label="About the Channel"
@@ -68,7 +136,10 @@ const Channels = () => {
             </Modal.Content>
             <Modal.Actions>
               <Button
+                type="submit"
+                onClick={handleSubmit}
                 disabled={isSubmitting || !(isValid && dirty)}
+                className={isSubmitting ? "loading" : ""}
                 color="green"
                 inverted
               >
@@ -93,4 +164,8 @@ const Channels = () => {
   );
 };
 
-export default Channels;
+const mapStateToProps = ({ channel }) => ({
+  currentChannel: channel.currentChannel,
+});
+
+export default connect(mapStateToProps, { setCurrentChannel })(Channels);
