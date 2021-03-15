@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Segment, Comment, Image } from "semantic-ui-react";
+import { Segment, Comment } from "semantic-ui-react";
 import MessagesHeader from "./MessagesHeader";
 import MessagesForm from "./MessagesForm";
 import firebase from "../../config/firebase";
