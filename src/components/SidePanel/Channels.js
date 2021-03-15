@@ -31,18 +31,21 @@ const Channels = ({ currentUser, setCurrentChannel, currentChannel }) => {
   }, []);
 
   const displayChannels = () =>
-    channels.length &&
-    channels.map((channel) => (
-      <Menu.Item
-        active={channel.name === currentChannel?.name}
-        style={channel.name === currentChannel?.name ? { color: "white" } : {}}
-        key={channel.id}
-        onClick={() => setCurrentChannel(channel)}
-        name={channel.name}
-      >
-        # {channel.name}
-      </Menu.Item>
-    ));
+    channels.length
+      ? channels.map((channel) => (
+          <Menu.Item
+            active={channel.name === currentChannel?.name}
+            style={
+              channel.name === currentChannel?.name ? { color: "white" } : {}
+            }
+            key={channel.id}
+            onClick={() => setCurrentChannel(channel)}
+            name={channel.name}
+          >
+            # {channel.name}
+          </Menu.Item>
+        ))
+      : null;
 
   return (
     <>
@@ -51,7 +54,7 @@ const Channels = ({ currentUser, setCurrentChannel, currentChannel }) => {
           <span>
             <Icon name="exchange" /> Channels{" "}
           </span>
-          ({channels.length}){" "}
+          ({channels.length ? channels.length : "..."}){" "}
           <Icon
             style={{ cursor: "pointer" }}
             onClick={() => setModal(true)}
