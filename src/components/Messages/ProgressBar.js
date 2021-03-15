@@ -8,7 +8,6 @@ const ProgressBar = ({ percentageUploaded, uploadState }) => {
         className="progress__bar"
         percent={percentageUploaded}
         indicating
-        progress
         size="medium"
         inverted
       />
