@@ -36,7 +36,7 @@ const Messages = ({ currentChannel, currentUser, prevChannelId }) => {
 
   return (
     <>
-      <MessagesHeader />
+      <MessagesHeader currentChannel={currentChannel} />
 
       <Segment>
         <Comment.Group className="messages" style={{ maxWidth: 1500 }}>
