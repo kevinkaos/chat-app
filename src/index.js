@@ -15,7 +15,7 @@ import Login from "./components/Auth/Login";
 import firebase from "./config/firebase";
 import { Provider, connect } from "react-redux";
 import store from "./store";
-import { setUser } from "./actions";
+import { setUser, clearUser } from "./actions";
 import Spinner from "./components/Spinner";
 
 const Root = ({ setUser, isLoading }) => {
@@ -25,15 +25,16 @@ const Root = ({ setUser, isLoading }) => {
       if (user) {
         setUser(user);
         history.push("/");
+      } else {
+        clearUser();
+        history.push("/login");
       }
     });
   }, [history, setUser]);
 
-  return isLoading ? (
-    <Spinner />
-  ) : (
+  return (
     <Switch>
-      <Route exact path="/" component={App} />
+      <Route exact path="/" component={isLoading ? Spinner : App} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
     </Switch>
@@ -44,7 +45,9 @@ const mapStateToProps = ({ user }) => ({
   isLoading: user.isLoading,
 });
 
-const RootWithRouter = withRouter(connect(mapStateToProps, { setUser })(Root));
+const RootWithRouter = withRouter(
+  connect(mapStateToProps, { setUser, clearUser })(Root)
+);
 
 ReactDOM.render(
   <Provider store={store}>
