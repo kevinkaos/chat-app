@@ -25,6 +25,10 @@ const Messages = ({ currentChannel, currentUser, prevChannelId }) => {
         });
       }
     }
+
+    return () => {
+      messagesRef.off();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChannel.id]);
 

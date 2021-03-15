@@ -7,8 +7,6 @@ import SidePanel from "./SidePanel";
 import Messages from "./Messages";
 import MetaPanel from "./MetaPanel";
 
-//TODO: add key prop for components?????
-
 const App = ({ currentUser, currentChannel }) => {
   const usePrevious = (value) => {
     const ref = useRef();
@@ -23,10 +21,14 @@ const App = ({ currentUser, currentChannel }) => {
   return (
     <Grid className="app" columns="equal" style={{ background: "#eee" }}>
       <ColorPanel />
-      <SidePanel currentUser={currentUser} />
+      <SidePanel
+        key={currentUser && currentUser.uid}
+        currentUser={currentUser}
+      />
       <Grid.Column style={{ marginLeft: "23rem" }}>
         {currentChannel && (
           <Messages
+            key={currentChannel.id}
             prevChannelId={prevChannelId}
             currentUser={currentUser}
             currentChannel={currentChannel}
