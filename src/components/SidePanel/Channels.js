@@ -26,7 +26,7 @@ const Channels = ({ currentUser, setCurrentChannel, currentChannel }) => {
       });
 
     return () => {
-      firebase.ref("channels").off();
+      firebase.database().ref("channels").off();
     };
   }, []);
 
