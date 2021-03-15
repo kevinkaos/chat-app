@@ -49,7 +49,7 @@ const Channels = ({ currentUser, setCurrentChannel, currentChannel }) => {
 
   return (
     <>
-      <Menu.Menu style={{ padding: "1rem 0" }}>
+      <Menu.Menu className="menu">
         <Menu.Item>
           <span>
             <Icon name="exchange" /> Channels{" "}

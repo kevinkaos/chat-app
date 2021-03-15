@@ -76,9 +76,6 @@ const MessagesForm = ({ messagesRef, currentChannel, currentUser }) => {
         }
       );
     }
-    return () => {
-      uploadState?.uploadTask && uploadState.uploadTask.off();
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uploadState.uploadTask]);
 
