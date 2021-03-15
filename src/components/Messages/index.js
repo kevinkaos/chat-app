@@ -93,10 +93,12 @@ const Messages = ({ currentChannel, currentUser, prevChannelId }) => {
   return (
     <>
       <MessagesHeader
+        query={searchState.query}
         handleSearchChange={handleSearchChange}
         numUniqueUsers={numUniqueUsers}
         currentChannel={currentChannel}
         loading={searchState.loading}
+        setSearchState={setSearchState}
       />
 
       <Segment>

@@ -6,6 +6,8 @@ const MessagesHeader = ({
   numUniqueUsers,
   handleSearchChange,
   loading,
+  query,
+  setSearchState,
 }) => {
   return (
     <Segment clearing>
@@ -21,7 +23,21 @@ const MessagesHeader = ({
           loading={loading}
           onChange={handleSearchChange}
           size="mini"
-          icon="search"
+          value={query}
+          icon={
+            query ? (
+              <Icon
+                name="close"
+                color="black"
+                link
+                onClick={() =>
+                  setSearchState((prevState) => ({ ...prevState, query: "" }))
+                }
+              />
+            ) : (
+              "search"
+            )
+          }
           name="searchTerm"
           placeholder="Search Messages"
         />
