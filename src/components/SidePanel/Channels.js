@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Menu, Icon, Modal, Form, Input, Button } from "semantic-ui-react";
+import {
+  Menu,
+  Icon,
+  Modal,
+  Form,
+  Input,
+  Button,
+  Label,
+} from "semantic-ui-react";
 import { Formik, Form as FormikForm, Field } from "formik";
 import * as Yup from "yup";
 import firebase from "../../config/firebase";
@@ -15,26 +23,86 @@ const Channels = ({
 }) => {
   const [channels, setChannels] = useState([]);
   const [modal, setModal] = useState(false);
+  const [channel, setChannel] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const messagesRef = firebase.database().ref("messages");
+  const channelsRef = firebase.database().ref("channels");
   const channelSchema = Yup.object().shape({
     channelName: Yup.string().required("Please provide a channel name."),
     channelDetails: Yup.string().required(
       "Please provide some details about the channel."
     ),
   });
+
   useEffect(() => {
-    firebase
-      .database()
-      .ref("channels")
-      .on("child_added", (snap) => {
-        if (snap.exists()) {
-          setChannels((prevState) => [...prevState, snap.val()]);
+    channelsRef.on("child_added", (snap) => {
+      setChannels((prevState) => [...prevState, snap.val()]);
+      messagesRef.child(snap.key).on("value", (snapshot) => {
+        console.log(snapshot);
+        if (channel) {
+          console.log("handle notifications");
+          let lastTotal = 0;
+
+          let index = notifications.findIndex(
+            (notif) => notif.id === snapshot.key
+          );
+          if (index !== -1) {
+            if (snapshot.key !== channel.id) {
+              lastTotal = notifications[index].total;
+
+              if (snapshot.numChildren() - lastTotal > 0) {
+                notifications[index].count = snapshot.numChildren() - lastTotal;
+              }
+            }
+            notifications[index].lastKnownTotal = snapshot.NumChildren();
+            setNotifications((prevState) => [...prevState, ...notifications]);
+          } else {
+            setNotifications((prevState) => [
+              ...prevState,
+              {
+                id: snapshot.key,
+                total: snapshot.numChildren(),
+                lastKnownTotal: snapshot.numChildren(),
+                count: 0,
+              },
+            ]);
+          }
         }
       });
+    });
 
     return () => {
       firebase.database().ref("channels").off();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  console.log("notifications", notifications);
+
+  const clearNotifications = () => {
+    let index = notifications.findIndex(
+      (notification) => notification.id === currentChannel.id
+    );
+
+    if (index !== -1) {
+      let updatedNotifications = [...notifications];
+      updatedNotifications[index].total = notifications[index].lastKnownTotal;
+      updatedNotifications[index].count = 0;
+      setNotifications((prevState) => [...prevState, updatedNotifications]);
+    }
+  };
+
+  const getNotificationCount = (channel) => {
+    let count = 0;
+
+    notifications.forEach((notification) => {
+      if (notification.id === channel.id) {
+        count = notification.count;
+      }
+    });
+
+    if (count > 0) return count;
+  };
 
   const displayChannels = () =>
     channels.length
@@ -48,9 +116,14 @@ const Channels = ({
             onClick={() => {
               setCurrentChannel(channel);
               setPrivateChannel(false);
+              setChannel(channel);
+              clearNotifications();
             }}
             name={channel.name}
           >
+            {getNotificationCount(channel) && (
+              <Label color="red">{getNotificationCount(channel)}</Label>
+            )}
             # {channel.name}
           </Menu.Item>
         ))
@@ -81,10 +154,8 @@ const Channels = ({
         validationSchema={channelSchema}
         onSubmit={(values, { setSubmitting, resetForm }) => {
           setSubmitting(true);
-          const key = firebase.database().ref("channels").push().key;
-          firebase
-            .database()
-            .ref("channels")
+          const key = channelsRef.push().key;
+          channelsRef
             .push()
             .set({
               id: key,
