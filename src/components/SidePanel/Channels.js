@@ -23,7 +23,6 @@ const Channels = ({
 }) => {
   const [channels, setChannels] = useState([]);
   const [modal, setModal] = useState(false);
-  const [channel, setChannel] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const messagesRef = firebase.database().ref("messages");
   const channelsRef = firebase.database().ref("channels");
@@ -37,38 +36,7 @@ const Channels = ({
   useEffect(() => {
     channelsRef.on("child_added", (snap) => {
       setChannels((prevState) => [...prevState, snap.val()]);
-      messagesRef.child(snap.key).on("value", (snapshot) => {
-        console.log(snapshot);
-        if (channel) {
-          console.log("handle notifications");
-          let lastTotal = 0;
-
-          let index = notifications.findIndex(
-            (notif) => notif.id === snapshot.key
-          );
-          if (index !== -1) {
-            if (snapshot.key !== channel.id) {
-              lastTotal = notifications[index].total;
-
-              if (snapshot.numChildren() - lastTotal > 0) {
-                notifications[index].count = snapshot.numChildren() - lastTotal;
-              }
-            }
-            notifications[index].lastKnownTotal = snapshot.NumChildren();
-            setNotifications((prevState) => [...prevState, ...notifications]);
-          } else {
-            setNotifications((prevState) => [
-              ...prevState,
-              {
-                id: snapshot.key,
-                total: snapshot.numChildren(),
-                lastKnownTotal: snapshot.numChildren(),
-                count: 0,
-              },
-            ]);
-          }
-        }
-      });
+      addNotificationListener(snap.child("id").val());
     });
 
     return () => {
@@ -77,19 +45,51 @@ const Channels = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  console.log("notifications", notifications);
+  const addNotificationListener = (channelId) => {
+    messagesRef.child(channelId).on("value", (snapshot) => {
+      let notifs = [];
+      let lastTotal = 0;
+      setNotifications((prevState) => {
+        const notifications = [...prevState];
+        let index = notifications.findIndex((notification) => {
+          return notification.id === snapshot.key;
+        });
 
-  const clearNotifications = () => {
-    let index = notifications.findIndex(
-      (notification) => notification.id === currentChannel.id
-    );
+        if (index !== -1) {
+          lastTotal = notifications[index].total;
 
-    if (index !== -1) {
-      let updatedNotifications = [...notifications];
-      updatedNotifications[index].total = notifications[index].lastKnownTotal;
-      updatedNotifications[index].count = 0;
-      setNotifications((prevState) => [...prevState, updatedNotifications]);
-    }
+          if (snapshot.numChildren() - lastTotal > 0) {
+            notifications[index].count = snapshot.numChildren() - lastTotal;
+          }
+
+          notifications[index].lastKnownTotal = snapshot.numChildren();
+          return notifications;
+        } else {
+          notifs.push({
+            id: snapshot.key,
+            total: snapshot.numChildren(),
+            lastKnownTotal: snapshot.numChildren(),
+            count: 0,
+          });
+          return [...prevState, ...notifs];
+        }
+      });
+    });
+  };
+
+  const clearNotifications = (currentChannel) => {
+    setNotifications((prevState) => {
+      const notifications = [...prevState];
+      let index = notifications.findIndex(
+        (notification) => notification.id === currentChannel.id
+      );
+
+      if (index !== -1) {
+        notifications[index].total = notifications[index].lastKnownTotal;
+        notifications[index].count = 0;
+        return notifications;
+      }
+    });
   };
 
   const getNotificationCount = (channel) => {
@@ -116,8 +116,7 @@ const Channels = ({
             onClick={() => {
               setCurrentChannel(channel);
               setPrivateChannel(false);
-              setChannel(channel);
-              clearNotifications();
+              clearNotifications(channel);
             }}
             name={channel.name}
           >
