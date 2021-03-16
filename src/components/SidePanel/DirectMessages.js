@@ -17,14 +17,12 @@ const DirectMessages = ({
   const presenceRef = firebase.database().ref("presence");
 
   useEffect(() => {
-    let loadedUsers = [];
     usersRef.on("child_added", (snap) => {
       if (currentUser.uid !== snap.key) {
         let user = snap.val();
         user["uid"] = snap.key;
         user["status"] = "offline";
-        loadedUsers.push(user);
-        setUsers(loadedUsers);
+        setUsers((prevState) => [...prevState, user]);
       }
     });
 
@@ -52,18 +50,18 @@ const DirectMessages = ({
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser.uid]);
+  }, []);
 
   const addStatusToUser = (userId, connected = true) => {
-    const updatedUsers = users.reduce((acc, user) => {
-      if (user.uid === userId) {
-        user["status"] = `${connected ? "online" : "offline"}`;
-      }
-
-      return acc.concat(user);
-    }, []);
-
-    setUsers(updatedUsers);
+    setUsers((prevState) => {
+      const newUserState = [...prevState];
+      return newUserState.reduce((acc, user) => {
+        if (user.uid === userId) {
+          user["status"] = `${connected ? "online" : "offline"}`;
+        }
+        return acc.concat(user);
+      }, []);
+    });
   };
 
   const changeChannel = (user) => {
