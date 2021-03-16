@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Segment, Comment } from "semantic-ui-react";
 import MessagesHeader from "./MessagesHeader";
 import MessagesForm from "./MessagesForm";
@@ -19,6 +19,13 @@ const Messages = ({
   const [searchState, setSearchState] = useState({
     query: "",
     loading: false,
+  });
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   });
 
   useEffect(() => {
@@ -120,6 +127,7 @@ const Messages = ({
             isImage={isImage}
             isOwnMessage={isOwnMessage}
           />
+          <div ref={(el) => (messagesEndRef.current = el)}></div>
         </Comment.Group>
       </Segment>
 

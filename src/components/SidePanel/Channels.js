@@ -49,6 +49,7 @@ const Channels = ({
     messagesRef.child(channelId).on("value", (snapshot) => {
       let notifs = [];
       let lastTotal = 0;
+
       setNotifications((prevState) => {
         const notifications = [...prevState];
         let index = notifications.findIndex((notification) => {
@@ -95,11 +96,12 @@ const Channels = ({
   const getNotificationCount = (channel) => {
     let count = 0;
 
-    notifications.forEach((notification) => {
-      if (notification.id === channel.id) {
-        count = notification.count;
-      }
-    });
+    notifications &&
+      notifications.forEach((notification) => {
+        if (notification.id === channel.id) {
+          count = notification.count;
+        }
+      });
 
     if (count > 0) return count;
   };
