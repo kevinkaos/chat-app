@@ -27,6 +27,12 @@ const MessagesForm = ({
     percentageUploaded: 0,
   });
 
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      sendMessage();
+    }
+  };
+
   const createMessage = (fileUrl = null) => {
     const userMessage = {
       timestamp: firebase.database.ServerValue.TIMESTAMP,
@@ -146,11 +152,10 @@ const MessagesForm = ({
         fluid
         value={message}
         name="message"
-        label={<Button icon={"add"} />}
-        labelPosition="right"
-        placeholder="Write your message"
+        placeholder="Send"
         style={{ marginBottom: "0.7rem" }}
         onChange={handleChange}
+        onKeyPress={handleKeyDown}
         error={errors.length ? true : false}
       />
       <Button.Group icon widths="2">

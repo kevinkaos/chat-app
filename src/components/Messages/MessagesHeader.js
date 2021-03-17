@@ -13,10 +13,7 @@ const MessagesHeader = ({
   return (
     <Segment clearing>
       <Header fluid="true" as="h2" floated="left" style={{ marginBottom: 0 }}>
-        <span>
-          {(isPrivateChannel ? "@" : "#") + currentChannel.name}{" "}
-          {isPrivateChannel && <Icon name={"star outline"} color="black" />}
-        </span>
+        <span>{(isPrivateChannel ? "@" : "#") + currentChannel.name} </span>
         {numUniqueUsers > 0 && (
           <Header.Subheader>{numUniqueUsers}</Header.Subheader>
         )}

@@ -2,10 +2,8 @@ import React, { useRef, useEffect } from "react";
 import { Grid } from "semantic-ui-react";
 import { connect } from "react-redux";
 import "./App.scss";
-import ColorPanel from "./ColorPanel";
 import SidePanel from "./SidePanel";
 import Messages from "./Messages";
-import MetaPanel from "./MetaPanel";
 
 const App = ({ currentUser, currentChannel, isPrivateChannel }) => {
   const usePrevious = (value) => {
@@ -20,7 +18,6 @@ const App = ({ currentUser, currentChannel, isPrivateChannel }) => {
 
   return (
     <Grid className="app" columns="equal" style={{ background: "#eee" }}>
-      <ColorPanel />
       <SidePanel
         key={currentUser && currentUser.uid}
         currentUser={currentUser}
@@ -36,7 +33,6 @@ const App = ({ currentUser, currentChannel, isPrivateChannel }) => {
           />
         )}
       </Grid.Column>
-      <Grid.Column width={4}>{currentChannel && <MetaPanel />}</Grid.Column>
     </Grid>
   );
 };
