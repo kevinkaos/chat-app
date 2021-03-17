@@ -22,7 +22,7 @@ const App = ({ currentUser, currentChannel, isPrivateChannel }) => {
         key={currentUser && currentUser.uid}
         currentUser={currentUser}
       />
-      <Grid.Column style={{ marginLeft: "23rem" }}>
+      <Grid.Column style={{ marginLeft: "18rem" }}>
         {currentChannel && (
           <Messages
             isPrivateChannel={isPrivateChannel}
