@@ -13,11 +13,7 @@ const UserPanel = ({ currentUser }) => {
       ),
       disabled: true,
     },
-    {
-      key: "avatar",
-      text: <span>Change Avatar</span>,
-    },
-    { key: "signout", text: <span onClick={handleSignout}>Sign out</span> },
+    { key: "signout", text: <div onClick={handleSignout}>Sign out</div> },
   ];
 
   const handleSignout = () => {
